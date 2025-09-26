@@ -12,7 +12,6 @@ import reviewRoutes from "./routes/review.route.js";
 import replyRoutes from "./routes/reply.route.js";
 import listRoutes from "./routes/list.route.js";
 
-const PORT = process.env.PORT || 8080;
 const MONGO = process.env.MONGO;
 
 const app = express();
@@ -20,21 +19,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-console.log(MONGO);
+console.log(
+  "Mongo connection string (MONGO) length:",
+  MONGO ? String(MONGO).length : "not set"
+);
 
 // connect to mongodb
 const connectDB = async () => {
+  if (!MONGO) {
+    throw new Error("MONGO environment variable not configured");
+  }
   try {
-    const connect = await mongoose.connect(MONGO);
-
+    // Use mongoose's connection cache to avoid reconnecting on warm invocations
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      console.log("Mongo already connected");
+      return;
+    }
+    // Connect without passing unsupported legacy options; let the driver pick sensible defaults
+    await mongoose.connect(MONGO);
     console.log("Connected to mongodb!");
   } catch (error) {
-    console.error("Error" + error);
-    process.exit(1);
+    console.error(
+      "Error connecting to MongoDB:",
+      error && error.stack ? error.stack : error
+    );
+    throw error;
   }
 };
-
-connectDB();
 
 app.get("/api/health", (req, res) => {
   res.send("We good");
@@ -61,6 +72,5 @@ app.use("/api/replies", replyRoutes);
 // use list routes
 app.use("/api/lists", listRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server is live`);
-});
+// Export app and connectDB for serverless wrapper
+export { app, connectDB };
