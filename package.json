@@ -7,7 +7,9 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "build": "cd client && npm ci && npm run build && cd .. && rm -rf public && mkdir -p public && cp -r client/dist/. public/",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "express": "^5.1.0",
