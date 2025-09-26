@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import Profile from "../models/profile.model.js";
 import DefaultList from "../models/defaultList.model.js";
 import { Router } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const router = Router();
